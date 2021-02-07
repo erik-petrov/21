@@ -3,7 +3,7 @@ import numpy
 import random
 import time
 
-#Это нереально без тредов или чего либо ещё.
+#доделать ботгейм(сделать интерфейс и функционал и тд)
 
 global amount, deck, playingDeck,decision
 deck = [1,2,3,4,5,6,7,8,9,10,"jack","queen","king","ace"]
@@ -82,50 +82,50 @@ def get_key(val,myDict): # взято с geeksforgeeks, выдает ключ п
             return key
 
 def levelChoice():
-    if entry.get().lower() == "начальный":
-        botlevel = 0
-    elif entry.get().lower() == "средний":
-        botlevel = 1
-    elif entry.get().lower() == "шпион":
-        botlevel = 666
+    botlevel = 0
+    if entry.get().lower() != "начальный" and "средний" and "шпион":
+        if entry.get().lower() == "начальный":
+            botlevel = 0
+        elif entry.get().lower() == "средний":
+            botlevel = 1
+        elif entry.get().lower() == "шпион":
+            botlevel = 666
     else:
-        feed.config(text="Неизвестная команда.\nСтавим бота на сложнейший уровень.")
-        botlevel = 666
-    botGame(playingDeck,botlevel)
+        botGame(playingDeck,botlevel)
 
 def botGame(deck,level):
     score = 0
     botScore = 0
     endgame = False
-    while endgame is not True:
-        while score < 21 and botScore < 21 and score != 21 and botScore != 21:
-            decision = input("Хотите ли вы взять карту? y/n\n")
+    if endgame is not True:
+        if score < 21 and botScore < 21 and score != 21 and botScore != 21:
+            feed.config(text="Хотите ли вы взять карту? y/n\n")
             if decision == 'y':
                 cardname, plusScore = giveCard(deck)
                 feed.config(text=f"Вы вытянули: {cardname} с достоинством {plusScore}")
-                botScore = botPlay(deck,botScore,botlevel,score)
+                botScore = botPlay(deck,botScore,level,score)
                 score += plusScore
                 print(f"У вас {score} очков")
                 print("Очки бота:",botScore)
             elif decision == 'n':
-                botScore = botPlay(deck,botScore,botlevel,score)
+                botScore = botPlay(deck,botScore,level,score)
                 print("Очки бота:",botScore)
             else:
                 print("Неверная команда.")
-        if botScore < 22 and (botScore == 21 or botScore > score or score > 21):
-            print('Победил бот.')
-        elif score < 22 and (score == 21 or score > botScore or botScore > 21):
-            print('Вы победили')
+            main.after(1000,botGame(deck,level))
         else:
-            print("Ничья")
-        endgame = True
-        input("Нажмите любую кнопку для выхода.")
-
-def game(players,deck):
+            if botScore < 22 and (botScore == 21 or botScore > score or score > 21):
+                print('Победил бот.')
+            elif score < 22 and (score == 21 or score > botScore or botScore > 21):
+                print('Вы победили')
+            else:
+                print("Ничья")
+def game(players):
+    deck = playingDeck
     random.shuffle(deck)
     endgame = False
     randomlist = []
-    while endgame is not True:
+    if endgame is not True:
         if players > 1:
             temp = 0
             x = 0
@@ -175,17 +175,19 @@ def game(players,deck):
                     else:
                         ret = get_key(21, plDict)
                         print(f"Победил игрок {ret}.")
-                endgame = True
+                main.after(2000,game(players))
             else:
                 print('Неверное кол-во игроков.')
-            endgame = True
         elif players == 1:
+            w(8,"normal")
+            w(7,"hidden")
             entry.delete(0,END)
             feed.config(text="Какого уровня бота вы желаете?\nНачальный\nСредний\nШпион\n")
             levelChoice()
         else:
             print('Не пиши бред.')
-            break
+    else:
+        pass
 
 main = Tk()
 main.geometry("600x600")
@@ -198,8 +200,8 @@ take = Button(main,text="Взять",command=lambda:dec("y"))
 passCard = Button(main,text="Пропустить",command=lambda:dec("n"))
 entry = Entry(main)
 mainButton = Button(main,text="Играть",command=lobby)
-playButton = Button(main,text="Продолжить",command=lambda: game(int(entry.get()),playingDeck))
-botButton = Button(main,text="Выбрать")
+playButton = Button(main,text="Продолжить",command=lambda: game(int(entry.get())))
+botButton = Button(main,text="Выбрать",command=levelChoice)
 feedId = can.create_window(300,200,window=feed)
 askCardId = can.create_window(300,300,window=askCard,state='hidden')
 takeId = can.create_window(250,500,window=take,state='hidden')
@@ -207,10 +209,8 @@ passCardId= can.create_window(350,500,window=passCard,state='hidden')
 entryId = can.create_window(300,300,window=entry,state='hidden')
 mainButtonId = can.create_window(300,300,window=mainButton)
 playButtonId = can.create_window(300,350,window=playButton,state='hidden')
-botButtonId = can.create_window(300,300,window=botButton,state="hidden")
+botButtonId = can.create_window(300,350,window=botButton,state="hidden")
 
 #can.itemconfigure(4, state='hidden')
-
-print(feedId,takeId,entryId)
-
+print(botButtonId)
 main.mainloop()
