@@ -5,9 +5,11 @@ import time
 
 #доделать ботгейм(сделать интерфейс и функционал и тд)
 
-global amount, deck, playingDeck,decision
+global amount, deck, playingDeck, decision
 deck = [1,2,3,4,5,6,7,8,9,10,"jack","queen","king","ace"]
 playingDeck = deck*4
+score = 0
+botScore = 0
 
 def w(id,state):
     can.itemconfigure(id,state=state)
@@ -51,11 +53,11 @@ def translate(card): #переводит карты, которые не циф�
     return card, cardNum
 
 def botPlay(deck,score,level,plScore):
-    level = 666
     if level == 0:
         finScore = score
-        score = giveCard(deck)
-        finScore += score[1]
+        name, score = giveCard(deck)
+        print(type(score))
+        finScore += score
         #return finScore
     elif level == 1:
         finScore = score
@@ -66,14 +68,14 @@ def botPlay(deck,score,level,plScore):
                 score = 0
         else:
             score = giveCard(deck)
-        finScore += score[1]
+        finScore += score
     elif level == 666:
         finScore = score
         if (plScore <= 20 or plScore > 17) and plScore < finScore:
             score = 0
         else:
             score = giveCard(deck)
-        finScore += score[1]
+        finScore += score
     return finScore
 
 def get_key(val,myDict): # взято с geeksforgeeks, выдает ключ по значению
@@ -83,7 +85,7 @@ def get_key(val,myDict): # взято с geeksforgeeks, выдает ключ п
 
 def levelChoice():
     botlevel = 0
-    if entry.get().lower() != "начальный" and "средний" and "шпион":
+    if entry.get().lower() not in ["начальный","средний","шпион"]:
         if entry.get().lower() == "начальный":
             botlevel = 0
         elif entry.get().lower() == "средний":
@@ -91,35 +93,39 @@ def levelChoice():
         elif entry.get().lower() == "шпион":
             botlevel = 666
     else:
+        w(3,"normal")
+        w(4,"normal")
         botGame(playingDeck,botlevel)
 
 def botGame(deck,level):
-    score = 0
-    botScore = 0
+    global botScore, score
     endgame = False
     if endgame is not True:
         if score < 21 and botScore < 21 and score != 21 and botScore != 21:
             feed.config(text="Хотите ли вы взять карту? y/n\n")
-            if decision == 'y':
+            main.wait_variable(decision)
+            if decision.get() == 'y':
                 cardname, plusScore = giveCard(deck)
-                feed.config(text=f"Вы вытянули: {cardname} с достоинством {plusScore}")
+                cardFeed.config(text=f"Вы вытянули: {cardname} с достоинством {plusScore}")
                 botScore = botPlay(deck,botScore,level,score)
                 score += plusScore
-                print(f"У вас {score} очков")
-                print("Очки бота:",botScore)
-            elif decision == 'n':
+                scoreInfo.config(text=f"У вас {score} очков\nОчки бота:{botScore}")
+            elif decision.get() == 'n':
                 botScore = botPlay(deck,botScore,level,score)
-                print("Очки бота:",botScore)
+                scoreInfo.config(text=f"У вас {score} очков\nОчки бота:{botScore}")
             else:
-                print("Неверная команда.")
+                feed.config(text="Неверная команда.")
             main.after(1000,botGame(deck,level))
         else:
             if botScore < 22 and (botScore == 21 or botScore > score or score > 21):
                 print('Победил бот.')
+                main.after(50000,main.destroy())
             elif score < 22 and (score == 21 or score > botScore or botScore > 21):
                 print('Вы победили')
+                main.after(50000,main.destroy())
             else:
                 print("Ничья")
+                main.after(50000,main.destroy())
 def game(players):
     deck = playingDeck
     random.shuffle(deck)
@@ -194,14 +200,17 @@ main.geometry("600x600")
 main.title("21")
 can = Canvas(main,width=600,height=600)
 can.pack()
+decision = StringVar()
 feed = Label(main)
 askCard=Label(main)
-take = Button(main,text="Взять",command=lambda:dec("y"))
-passCard = Button(main,text="Пропустить",command=lambda:dec("n"))
+take = Button(main,text="Взять",command=lambda:decision.set("y"))
+passCard = Button(main,text="Пропустить",command=lambda:decision.set("n"))
 entry = Entry(main)
 mainButton = Button(main,text="Играть",command=lobby)
 playButton = Button(main,text="Продолжить",command=lambda: game(int(entry.get())))
 botButton = Button(main,text="Выбрать",command=levelChoice)
+scoreInfo = Label(main)
+cardFeed = Label(main)
 feedId = can.create_window(300,200,window=feed)
 askCardId = can.create_window(300,300,window=askCard,state='hidden')
 takeId = can.create_window(250,500,window=take,state='hidden')
@@ -210,7 +219,9 @@ entryId = can.create_window(300,300,window=entry,state='hidden')
 mainButtonId = can.create_window(300,300,window=mainButton)
 playButtonId = can.create_window(300,350,window=playButton,state='hidden')
 botButtonId = can.create_window(300,350,window=botButton,state="hidden")
+scoreInfoId = can.create_window(100,100,window=scoreInfo)
+cardFeedId = can.create_window(300,100,window=cardFeed)
 
 #can.itemconfigure(4, state='hidden')
-print(botButtonId)
+print(takeId, passCardId)
 main.mainloop()
