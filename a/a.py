@@ -95,6 +95,8 @@ def levelChoice():
     else:
         w(3,"normal")
         w(4,"normal")
+        w(5,"hidden")
+        w(8,"hidden")
         botGame(playingDeck,botlevel)
 
 def botGame(deck,level):
@@ -223,5 +225,5 @@ scoreInfoId = can.create_window(100,100,window=scoreInfo)
 cardFeedId = can.create_window(300,100,window=cardFeed)
 
 #can.itemconfigure(4, state='hidden')
-print(takeId, passCardId)
+print(entryId,botButtonId)
 main.mainloop()
